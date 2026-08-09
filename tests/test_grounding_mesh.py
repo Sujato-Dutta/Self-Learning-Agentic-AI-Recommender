@@ -54,6 +54,31 @@ def test_action_copy_rejects_unverified_job_statistic():
     assert any("numeric claim" in error for error in errors)
 
 
+def test_action_copy_accepts_selected_product_title_in_headline():
+    output = {
+        "action_copy": {
+            "headline": "Take Production RAG Systems next",
+            "message": "It closes the production deployment gap reflected in your recent learning signals.",
+        }
+    }
+
+    assert validate_action_copy(output, "Production RAG Systems", set()) == (True, [])
+
+
+def test_action_copy_rejects_selected_product_absent_from_headline_and_message():
+    output = {
+        "action_copy": {
+            "headline": "Take this focused course next",
+            "message": "It closes the production deployment gap reflected in your recent learning signals.",
+        }
+    }
+
+    valid, errors = validate_action_copy(output, "Production RAG Systems", set())
+
+    assert not valid
+    assert "selected product is absent from action copy" in errors
+
+
 def test_grounding_allows_empty_catalog_only_for_explicit_suppression_path():
     output = {"headline": "No action", "narrative": "SmartReco is waiting for a verified catalog match.",
               "recommendations": []}

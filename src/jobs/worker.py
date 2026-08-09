@@ -1,6 +1,5 @@
 """Run SmartReco scheduled work once, outside every web process."""
 
-import os
 import signal
 from threading import Event
 from types import FrameType
@@ -10,6 +9,7 @@ from prometheus_client import start_http_server
 
 from src.config import Settings, get_settings
 from src.jobs.scheduler import start_scheduler
+from src.observability.langsmith import configure_langsmith
 from src.observability.logging import configure_logging, logger
 from src.services.embedding_service import EmbeddingService
 from src.services.mesh_client import MeshClient
@@ -28,10 +28,7 @@ def build_scheduler(settings: Settings | None = None) -> BackgroundScheduler:
     if not settings.scheduler_enabled:
         raise RuntimeError("The scheduler worker requires SCHEDULER_ENABLED=true")
 
-    if settings.langsmith_tracing and settings.langsmith_api_key:
-        os.environ["LANGSMITH_TRACING"] = "true"
-        os.environ["LANGSMITH_API_KEY"] = settings.langsmith_api_key.get_secret_value()
-        os.environ["LANGSMITH_PROJECT"] = settings.langsmith_project
+    configure_langsmith(settings)
 
     mesh = MeshClient(settings)
     embeddings = EmbeddingService(mesh)

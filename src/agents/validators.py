@@ -52,7 +52,10 @@ def validate_action_copy(
         errors.append("action headline length is invalid")
     if not isinstance(message, str) or not 20 <= len(message) <= 1200:
         errors.append("action message length is invalid")
-    if selected_product_title and isinstance(message, str) and selected_product_title.lower() not in message.lower():
+    visible_action_copy = " ".join(
+        part for part in (headline, message) if isinstance(part, str)
+    ).lower()
+    if selected_product_title and selected_product_title.lower() not in visible_action_copy:
         errors.append("selected product is absent from action copy")
     if isinstance(message, str):
         found_numbers = set(re.findall(r"(?<![A-Za-z])\d[\d,]*(?:\.\d+)?%?", message))

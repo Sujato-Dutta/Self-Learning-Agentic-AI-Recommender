@@ -94,7 +94,7 @@ python -m scripts.seed
 uvicorn src.main:app --reload
 ```
 
-Open `http://localhost:8000`. Interactive API documentation is available at `http://localhost:8000/docs`.
+Open `http://localhost:8000`.
 
 | Local role | Email | Password |
 |---|---|---|

@@ -132,17 +132,112 @@ class OutboxService:
         return True
 
     @staticmethod
-    def refresh_metrics(db: Session) -> None:
-        pending = db.scalar(select(func.count()).select_from(ProductVectorOutbox).where(
-            ProductVectorOutbox.status == OutboxStatus.pending)) or 0
-        failed = db.scalar(select(func.count()).select_from(ProductSyncFailure)) or 0
-        oldest = db.scalar(select(func.min(ProductVectorOutbox.created_at)).where(
-            ProductVectorOutbox.status == OutboxStatus.pending))
-        SYNC_PENDING.set(pending)
-        SYNC_DEAD_LETTER.set(failed)
-        if oldest:
+    def _latest_effective_jobs(db: Session) -> list[dict]:
+        """Return only the newest operation for each product.
+
+        Product edits can leave older pending or failed rows in the durable
+        outbox. Those rows are useful audit history, but they no longer describe
+        current sync health once a newer product version (or a later operation
+        for the same version) exists.
+        """
+        ranked = select(
+            ProductVectorOutbox.id.label("id"),
+            ProductVectorOutbox.product_id.label("product_id"),
+            ProductVectorOutbox.operation.label("operation"),
+            ProductVectorOutbox.product_version.label("product_version"),
+            ProductVectorOutbox.status.label("status"),
+            ProductVectorOutbox.created_at.label("created_at"),
+            func.row_number().over(
+                partition_by=ProductVectorOutbox.product_id,
+                order_by=(
+                    ProductVectorOutbox.product_version.desc(),
+                    ProductVectorOutbox.created_at.desc(),
+                    ProductVectorOutbox.id.desc(),
+                ),
+            ).label("effective_rank"),
+        ).subquery()
+        rows = db.execute(select(ranked).where(ranked.c.effective_rank == 1)).mappings()
+        return [dict(row) for row in rows]
+
+    @classmethod
+    def _effective_snapshot(cls, db: Session) -> tuple[list[dict], dict[str, int]]:
+        jobs = cls._latest_effective_jobs(db)
+        counts = {status.value: 0 for status in OutboxStatus}
+        jobs_by_product: dict[str, dict] = {}
+        for job in jobs:
+            status = job["status"]
+            status_value = status.value if isinstance(status, OutboxStatus) else str(status)
+            if status_value in counts:
+                counts[status_value] += 1
+            jobs_by_product[job["product_id"]] = job
+
+        active_products = dict(db.execute(select(Product.id, Product.version).where(
+            Product.is_active.is_(True)
+        )).all())
+        active_synced = 0
+        for product_id, product_version in active_products.items():
+            job = jobs_by_product.get(product_id)
+            if not job:
+                continue
+            status = job["status"]
+            status_value = status.value if isinstance(status, OutboxStatus) else str(status)
+            if (
+                status_value == OutboxStatus.complete.value
+                and job["operation"] == "upsert"
+                and job["product_version"] >= product_version
+            ):
+                active_synced += 1
+
+        health = {
+            "pending": counts[OutboxStatus.pending.value],
+            "processing": counts[OutboxStatus.processing.value],
+            "failed": counts[OutboxStatus.failed.value],
+            "complete": counts[OutboxStatus.complete.value],
+            "active_synced": active_synced,
+            "active_unsynced": len(active_products) - active_synced,
+            "history_failures": db.scalar(
+                select(func.count()).select_from(ProductSyncFailure)
+            ) or 0,
+        }
+        return jobs, health
+
+    @classmethod
+    def effective_health(cls, db: Session) -> dict[str, int]:
+        """Current vector-sync health, separated from durable retry history."""
+        _, health = cls._effective_snapshot(db)
+        return health
+
+    @classmethod
+    def effective_jobs(cls, db: Session, limit: int = 30) -> list[ProductVectorOutbox]:
+        """Newest operation per product for the actionable admin queue."""
+        effective_ids = [job["id"] for job in cls._latest_effective_jobs(db)]
+        if not effective_ids:
+            return []
+        statement = select(ProductVectorOutbox).where(
+            ProductVectorOutbox.id.in_(effective_ids)
+        ).order_by(ProductVectorOutbox.created_at.desc())
+        if limit > 0:
+            statement = statement.limit(limit)
+        return list(db.scalars(statement))
+
+    @classmethod
+    def refresh_metrics(cls, db: Session) -> None:
+        jobs, health = cls._effective_snapshot(db)
+        unfinished = []
+        for job in jobs:
+            status = job["status"]
+            status_value = status.value if isinstance(status, OutboxStatus) else str(status)
+            if status_value in {OutboxStatus.pending.value, OutboxStatus.processing.value}:
+                unfinished.append(job["created_at"])
+
+        SYNC_PENDING.set(health["pending"] + health["processing"])
+        SYNC_DEAD_LETTER.set(health["failed"])
+        if unfinished:
+            oldest = min(unfinished)
             when = oldest if oldest.tzinfo else oldest.replace(tzinfo=timezone.utc)
             SYNC_LAG.set(max(0, (datetime.now(timezone.utc) - when).total_seconds()))
+        else:
+            SYNC_LAG.set(0)
 
     def reconcile(self, db: Session) -> dict:
         sql_ids = set(db.scalars(select(Product.id).where(Product.is_active.is_(True))))

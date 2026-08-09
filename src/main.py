@@ -1,4 +1,3 @@
-import os
 import time
 import uuid
 from collections import defaultdict, deque
@@ -27,14 +26,12 @@ from src.models import (
     MarketSignal,
     NextBestAction,
     NotificationPreference,
-    OutboxStatus,
     Product,
-    ProductSyncFailure,
-    ProductVectorOutbox,
     Recommendation,
     ScheduledDelivery,
     User,
 )
+from src.observability.langsmith import configure_langsmith
 from src.observability.logging import configure_logging, logger
 from src.observability.metrics import HTTP_ACTIVE, HTTP_LATENCY, HTTP_REQUESTS
 from src.repositories.enrollments import (
@@ -85,10 +82,7 @@ async def lifespan(app: FastAPI):
     configure_logging()
     settings = get_settings()
     settings.validate_production()
-    if settings.langsmith_tracing and settings.langsmith_api_key:
-        os.environ["LANGSMITH_TRACING"] = "true"
-        os.environ["LANGSMITH_API_KEY"] = settings.langsmith_api_key.get_secret_value()
-        os.environ["LANGSMITH_PROJECT"] = settings.langsmith_project
+    configure_langsmith(settings)
     if settings.app_env != "production":
         Base.metadata.create_all(engine)
         apply_sqlite_catalog_migration()
@@ -655,6 +649,34 @@ def admin_dashboard(request: Request):
             return RedirectResponse("/login", status_code=303)
         if user.role.value != "admin":
             raise HTTPException(403, "Administrator access required")
+        settings = request.app.state.settings
+        scheduler = getattr(request.app.state, "scheduler", None)
+        langsmith_key = (
+            settings.langsmith_api_key.get_secret_value()
+            if settings.langsmith_api_key else ""
+        )
+        runtime = {
+            "environment": settings.app_env,
+            "database": "SQLite local" if settings.database_url.startswith("sqlite") else "PostgreSQL",
+            "mesh": bool(getattr(request.app.state.mesh, "available", False)),
+            "mesh_model": settings.mesh_model,
+            "pinecone": bool(getattr(request.app.state.vectors, "available", False)),
+            "langsmith": bool(
+                settings.langsmith_tracing
+                and langsmith_key
+                and (
+                    not langsmith_key.startswith("lsv2_sk_")
+                    or settings.langsmith_workspace_id
+                )
+            ),
+            "langsmith_configured": bool(settings.langsmith_tracing and langsmith_key),
+            "smtp": bool(settings.smtp_host and settings.smtp_from),
+            "scheduler": bool(scheduler and scheduler.running),
+        }
+        runtime["ready"] = all(
+            runtime[name] for name in ("mesh", "pinecone", "smtp", "scheduler")
+        )
+        sync_health = OutboxService.effective_health(db)
         counts = {
             "users": db.scalar(select(func.count()).select_from(User)) or 0,
             "products": db.scalar(select(func.count()).select_from(Product).where(Product.is_active.is_(True))) or 0,
@@ -667,14 +689,36 @@ def admin_dashboard(request: Request):
             "suppressed": db.scalar(select(func.count()).select_from(NextBestAction).where(
                 NextBestAction.status == "suppressed"
             )) or 0,
-            "pending": db.scalar(select(func.count()).select_from(ProductVectorOutbox).where(ProductVectorOutbox.status == OutboxStatus.pending)) or 0,
-            "failed": db.scalar(select(func.count()).select_from(ProductSyncFailure)) or 0,
+            "pending": sync_health["pending"] + sync_health["processing"],
+            "failed": sync_health["failed"],
+            "synced": sync_health["active_synced"],
+            "unsynced": sync_health["active_unsynced"],
+            "failure_history": sync_health["history_failures"],
         }
+        runs = list(db.scalars(select(AgentRun).order_by(AgentRun.created_at.desc()).limit(20)))
+        for run in runs:
+            repaired = any(
+                node.get("node") == "validate_and_repair" and node.get("valid") is True
+                for node in (run.node_trace or [])
+            )
+            if run.status == "success":
+                run.display_status = "successful"
+                run.display_status_class = "success"
+            elif repaired:
+                run.display_status = "grounded repair"
+                run.display_status_class = "recovered"
+            elif run.status == "failed":
+                run.display_status = "failed"
+                run.display_status_class = "failed"
+            else:
+                run.display_status = "safe fallback"
+                run.display_status_class = "warning"
         return template_response(request, "admin.html", page_context(
-            request, user, counts=counts, products=list_products(db, include_inactive=True),
-            outbox=list(db.scalars(select(ProductVectorOutbox).order_by(ProductVectorOutbox.created_at.desc()).limit(30))),
+            request, user, counts=counts, runtime=runtime,
+            products=list_products(db, include_inactive=True),
+            outbox=OutboxService.effective_jobs(db),
             events=list(db.scalars(select(Event).order_by(Event.occurred_at.desc()).limit(50))),
-            runs=list(db.scalars(select(AgentRun).order_by(AgentRun.created_at.desc()).limit(20))),
+            runs=runs,
             actions=list(db.scalars(select(NextBestAction).order_by(
                 NextBestAction.created_at.desc()
             ).limit(50))),

@@ -5,6 +5,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from src.models import (
+    AgentRun,
     BehaviorProfile,
     Event,
     MarketSignal,
@@ -276,6 +277,7 @@ def seed_database(db: Session, reset_demo: bool = False, catalog_only: bool = Fa
         db.execute(delete(UserEnrollment).where(UserEnrollment.user_id == learner.id))
         db.execute(delete(Event).where(Event.user_id == learner.id))
         db.execute(delete(BehaviorProfile).where(BehaviorProfile.user_id == learner.id))
+        db.execute(delete(AgentRun).where(AgentRun.user_id == learner.id))
         db.execute(delete(NextBestActionReward).where(NextBestActionReward.user_id == learner.id))
         db.execute(delete(NextBestAction).where(NextBestAction.user_id == learner.id))
         db.execute(delete(Recommendation).where(Recommendation.user_id == learner.id))
