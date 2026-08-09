@@ -16,7 +16,7 @@ jobs:
       - run: pip install -r requirements-dev.txt
       - run: python -m compileall -q src scripts tests
       - run: ruff check src scripts tests
-      - run: pytest --cov=src --cov-report=term-missing --cov-fail-under=65
+      - run: python -m pytest --cov=src --cov-report=term-missing --cov-fail-under=65
       - name: Secret scan
         run: |
           if git ls-files | grep -E '(^|/)\.env$'; then exit 1; fi
