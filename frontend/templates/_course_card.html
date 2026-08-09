@@ -1,0 +1,36 @@
+{% set card_mode = course_card_mode|default('catalog') %}
+{% set purchased_ids = purchased_product_ids|default([]) %}
+{% set offer = product_offers.get(product.id) if product_offers is defined and product_offers else none %}
+{% set exact_owned = card_mode == 'owned' or product.id in purchased_ids %}
+{% set offer_eligible = offer.eligible if offer else not exact_owned %}
+{% set already_purchased = exact_owned or not offer_eligible %}
+{% set completion_offer = product.is_bundle and offer and offer.has_ownership_credit and offer.eligible %}
+{% set display_price = offer.personalized_price if offer else product.price %}
+{% set display_original_price = offer.remaining_standalone_subtotal if offer and product.is_bundle else product.original_price %}
+{% set display_savings_percent = offer.discount_percent if offer else product.savings_percent %}
+<article class="course-card{{ ' bundle-card' if product.is_bundle else '' }}{{ ' completion-bundle-card' if completion_offer else '' }}{{ ' is-purchased' if already_purchased else '' }}" tabindex="0" data-product-id="{{ product.id }}" data-price="{{ display_price }}" data-catalog-price="{{ offer.catalog_price if offer else product.price }}" data-ownership-credit="{{ offer.ownership_credit if offer else 0 }}" data-offer-eligible="{{ 'true' if offer_eligible else 'false' }}"{% if product.is_bundle %} data-component-ids='{{ product.bundled_product_ids|tojson }}'{% if offer %} data-owned-component-ids='{{ offer.owned_components|map(attribute="product_id")|list|tojson }}' data-remaining-component-ids='{{ offer.remaining_components|map(attribute="product_id")|list|tojson }}'{% endif %}{% endif %} data-category="{{ product.category }}" data-title="{{ product.title }}" data-course-url="/courses/{{ product.slug }}">
+  <div class="course-media">
+    <img src="{{ product.image_url }}" alt="{{ product.title }} course cover" loading="lazy">
+    {% if completion_offer %}<span class="bundle-badge completion-badge">COMPLETE YOUR BUNDLE</span>{% elif product.is_bundle %}<span class="bundle-badge">PROFESSIONAL BUNDLE</span>{% endif %}
+    {% if card_mode != 'owned' and offer_eligible %}<button class="save-button" aria-label="Save {{ product.title }}" data-save data-save-heart>&#9825;</button>{% endif %}
+  </div>
+  <div class="course-body">
+    <div class="course-kind-row"><span class="course-kind">{{ 'BUNDLE' if product.is_bundle else 'COURSE' }} &middot; {{ product.category }}</span>{% if card_mode == 'owned' %}<span class="course-owned-chip">PURCHASED</span>{% elif not offer_eligible and product.is_bundle %}<span class="course-owned-chip">ALL INCLUDED COURSES OWNED</span>{% endif %}</div>
+    <h3><a href="/courses/{{ product.slug }}" data-course-link>{{ product.title }}</a></h3>
+    <p>{{ product.description }}</p>
+    <div class="course-meta"><span>&#9733; {{ '%.1f'|format(4 + product.popularity) }}</span><span>&#9677; {{ product.difficulty|title }}</span><span>{% if completion_offer %}{{ offer.remaining_components|length }} courses remaining{% elif product.is_bundle %}{{ product.bundled_product_ids|length }} courses{% else %}{{ product.duration_hours|round|int }}h{% endif %}</span></div>
+    {% if completion_offer %}<div class="bundle-completion-note"><span>{{ offer.owned_components|length }} course{{ '' if offer.owned_components|length == 1 else 's' }} already yours</span><small>{{ offer.remaining_components|length }} remaining &middot; &#8377;{{ offer.ownership_credit|inr }} credit applied</small></div>{% endif %}
+    {% if card_mode != 'owned' and offer_eligible %}<div class="course-price{% if display_original_price and display_original_price > display_price %} sale-price{% endif %}">{% if display_original_price and display_original_price > display_price %}<del>&#8377;{{ display_original_price|inr }}</del>{% endif %}<b>&#8377;{{ display_price|inr }}</b>{% if display_savings_percent %}<span>Save {{ display_savings_percent }}%</span>{% endif %}</div>{% endif %}
+    <div class="course-actions">
+      {% if card_mode == 'owned' %}
+      <button class="start-learning-button" type="button">Start Learning</button>
+      {% elif already_purchased %}
+      <span class="course-purchased-status"><span aria-hidden="true">&#10003;</span> {{ 'All courses already purchased' if product.is_bundle else 'Already purchased' }}</span>
+      {% elif completion_offer %}
+      <button data-cart>Complete bundle</button><a href="/courses/{{ product.slug }}?buy=1" data-buy>Complete now</a>
+      {% else %}
+      <button data-cart>Add to cart</button><a href="/courses/{{ product.slug }}?buy=1" data-buy>Buy now</a>
+      {% endif %}
+    </div>
+  </div>
+</article>

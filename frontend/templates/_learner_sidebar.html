@@ -1,0 +1,15 @@
+<aside class="app-sidebar">
+  <div class="sidebar-brand-row"><a class="brand" href="/"><span class="brand-mark"><img src="/assets/logo.png" alt=""></span><span class="brand-name"><span>Smart</span><span class="brand-reco">Reco</span></span></a></div>
+  <button class="sidebar-collapse" data-toggle-sidebar aria-expanded="true" aria-label="Collapse navigation" title="Collapse navigation"><span class="collapse-arrow">←</span></button>
+  <nav aria-label="Learner navigation">
+    <a class="{{ 'active' if active_page == 'discover' else '' }}" href="/discover" title="Discover"{% if active_page == 'discover' %} aria-current="page"{% endif %}><span class="nav-icon">⌾</span><span class="nav-label">Discover</span></a>
+    <a class="{{ 'active' if active_page == 'my_courses' else '' }}" href="/my-courses" title="My Courses"{% if active_page == 'my_courses' %} aria-current="page"{% endif %}><span class="nav-icon">&#9655;</span><span class="nav-label">My Courses</span></a>
+    <a class="{{ 'active' if active_page == 'saved' else '' }}" href="/saved" title="Saved"{% if active_page == 'saved' %} aria-current="page"{% endif %}><span class="nav-icon">♡</span><span class="nav-label">Saved</span></a>
+    <a class="{{ 'active' if active_page == 'cart' else '' }}" href="/cart" title="Cart"{% if active_page == 'cart' %} aria-current="page"{% endif %}><span class="nav-icon">▤</span><span class="nav-label">Cart</span><b class="nav-count" data-cart-count>0</b></a>
+  </nav>
+  <div class="sidebar-user"><div class="avatar">{{ user.email[0]|upper }}</div><b class="learner-name">{{ user.email.split('@')[0]|title }}</b></div>
+  <form class="sidebar-logout" action="/auth/logout" method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <button type="submit" aria-label="Log out" title="Log out"><span class="logout-icon" aria-hidden="true">&#8618;</span><span class="nav-label">Log out</span></button>
+  </form>
+</aside>

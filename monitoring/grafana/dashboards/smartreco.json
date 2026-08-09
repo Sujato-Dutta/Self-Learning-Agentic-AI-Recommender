@@ -1,0 +1,27 @@
+{
+  "annotations": {"list": []},
+  "editable": true,
+  "graphTooltip": 1,
+  "panels": [
+    {"type":"stat","title":"Request rate","targets":[{"expr":"sum(rate(smartreco_http_requests_total[5m]))"}],"gridPos":{"h":6,"w":6,"x":0,"y":0}},
+    {"type":"stat","title":"Events / minute","targets":[{"expr":"sum(rate(smartreco_events_received_total[5m])) * 60"}],"gridPos":{"h":6,"w":6,"x":6,"y":0}},
+    {"type":"stat","title":"Pending vector sync","targets":[{"expr":"smartreco_outbox_pending"}],"gridPos":{"h":6,"w":6,"x":12,"y":0}},
+    {"type":"stat","title":"Mesh calls saved","targets":[{"expr":"sum(increase(smartreco_mesh_calls_avoided_total[24h]))"}],"gridPos":{"h":6,"w":6,"x":18,"y":0}},
+    {"type":"timeseries","title":"API latency p95","targets":[{"expr":"histogram_quantile(0.95, sum(rate(smartreco_http_request_duration_seconds_bucket[5m])) by (le))"}],"gridPos":{"h":8,"w":12,"x":0,"y":6}},
+    {"type":"timeseries","title":"Recommendation latency p95","targets":[{"expr":"histogram_quantile(0.95, sum(rate(smartreco_recommendation_duration_seconds_bucket[5m])) by (le))"}],"gridPos":{"h":8,"w":12,"x":12,"y":6}},
+    {"type":"timeseries","title":"Mesh API usage","targets":[{"expr":"sum(rate(smartreco_mesh_calls_total[5m])) by (operation,status)"}],"gridPos":{"h":8,"w":12,"x":0,"y":14}},
+    {"type":"timeseries","title":"Recommendation engagement","targets":[{"expr":"sum(rate(smartreco_recommendation_engagement_total[5m])) by (action)"}],"gridPos":{"h":8,"w":12,"x":12,"y":14}},
+    {"type":"timeseries","title":"Next-best actions","targets":[{"expr":"sum(rate(smartreco_next_best_action_decisions_total[5m])) by (action)"}],"gridPos":{"h":8,"w":12,"x":0,"y":22}},
+    {"type":"timeseries","title":"Attributed rewards","targets":[{"expr":"sum(rate(smartreco_next_best_action_rewards_total[5m])) by (event_type,sign)"}],"gridPos":{"h":8,"w":12,"x":12,"y":22}},
+    {"type":"timeseries","title":"Expected revenue p50 by action","targets":[{"expr":"histogram_quantile(0.50, sum(rate(smartreco_next_best_action_expected_revenue_bucket[15m])) by (le,action))"}],"gridPos":{"h":8,"w":12,"x":0,"y":30}},
+    {"type":"timeseries","title":"Purchase propensity p50 by stage","targets":[{"expr":"histogram_quantile(0.50, sum(rate(smartreco_purchase_propensity_bucket[15m])) by (le,stage))"}],"gridPos":{"h":8,"w":12,"x":12,"y":30}}
+  ],
+  "schemaVersion": 39,
+  "tags": ["smartreco", "recommendations", "next-best-action"],
+  "templating": {"list": []},
+  "time": {"from": "now-6h", "to": "now"},
+  "timezone": "browser",
+  "title": "SmartReco Production Overview",
+  "uid": "smartreco-overview",
+  "version": 2
+}

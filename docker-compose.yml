@@ -1,0 +1,128 @@
+name: smartreco
+
+x-smartreco-environment: &smartreco-environment
+  APP_ENV: production
+  MESH_CALLS_ENABLED: ${MESH_CALLS_ENABLED:-false}
+  PINECONE_NAMESPACE: ${PINECONE_NAMESPACE:-production}
+  SESSION_COOKIE_SECURE: "true"
+
+x-smartreco-common: &smartreco-common
+  image: ${SMARTRECO_IMAGE:-smartreco:latest}
+  build:
+    context: .
+    target: runtime
+    args:
+      APP_VERSION: ${APP_VERSION:-local}
+  env_file:
+    - .env
+  init: true
+  read_only: true
+  tmpfs:
+    - /tmp:rw,noexec,nosuid,size=64m
+  cap_drop:
+    - ALL
+  security_opt:
+    - no-new-privileges:true
+  pids_limit: 200
+  stop_grace_period: 45s
+  restart: unless-stopped
+  logging:
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: "3"
+
+services:
+  app:
+    <<: *smartreco-common
+    environment:
+      <<: *smartreco-environment
+      SCHEDULER_ENABLED: "false"
+      WEB_CONCURRENCY: ${WEB_CONCURRENCY:-1}
+    ports:
+      - "${SMARTRECO_BIND_ADDRESS:-0.0.0.0}:${SMARTRECO_PORT:-8000}:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=3)"]
+      interval: 20s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
+
+  scheduler:
+    <<: *smartreco-common
+    command: ["python", "-m", "src.jobs.worker"]
+    environment:
+      <<: *smartreco-environment
+      SCHEDULER_ENABLED: "true"
+      SCHEDULER_METRICS_PORT: "9101"
+    expose:
+      - "9101"
+    depends_on:
+      app:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:9101/metrics', timeout=3)"]
+      interval: 30s
+      timeout: 3s
+      start_period: 15s
+      retries: 3
+
+  catalog-bootstrap:
+    <<: *smartreco-common
+    profiles: ["bootstrap"]
+    command: ["python", "scripts/bootstrap_catalog.py"]
+    environment:
+      <<: *smartreco-environment
+      SCHEDULER_ENABLED: "false"
+    depends_on:
+      app:
+        condition: service_healthy
+    healthcheck:
+      disable: true
+    restart: "no"
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=15d
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "127.0.0.1:${PROMETHEUS_PORT:-9090}:9090"
+    depends_on:
+      app:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=32m
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?Set GRAFANA_ADMIN_PASSWORD in .env}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:-http://localhost:3000}
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "127.0.0.1:${GRAFANA_PORT:-3000}:3000"
+    depends_on:
+      prometheus:
+        condition: service_started
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+volumes:
+  prometheus_data:
+  grafana_data:

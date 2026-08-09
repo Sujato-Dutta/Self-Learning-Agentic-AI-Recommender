@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Cart — SmartReco{% endblock %}
+{% block body_class %}workspace-page{% endblock %}
+{% block content %}
+<div class="workspace-shell no-insights">
+  {% set active_page = 'cart' %}{% include "_learner_sidebar.html" %}
+  <div class="app-main">{% set page_title = 'Your cart' %}{% set show_insights = false %}{% include "_learner_topbar.html" %}
+    <main id="main-content" class="focused-page"><header class="focused-heading"><span>READY WHEN YOU ARE</span><h1>Your cart</h1><p>Review the courses selected for your next learning step.</p></header><div class="cart-layout"><div class="course-grid cart-grid" data-collection-grid="cart">{% for product in products %}{% include "_course_card.html" %}{% endfor %}</div><aside class="cart-summary"><span>ORDER SUMMARY</span><h2>Learning investment</h2><dl><div><dt>Items</dt><dd data-cart-items>0</dd></div><div><dt>Subtotal</dt><dd data-cart-subtotal>₹0</dd></div><div class="cart-credit-row" data-cart-credit-row hidden><dt>Owned-course credit</dt><dd data-cart-credit>−₹0</dd></div><div><dt>Taxes</dt><dd>Calculated at checkout</dd></div></dl><strong><span>Total</span><b data-cart-total>₹0</b></strong><button class="button button-primary button-full" data-checkout>Complete demo purchase</button><p>Bundle prices automatically credit courses you already own. The server rechecks your access before completing the demo purchase.</p></aside></div><div class="collection-empty hidden" data-collection-empty><span>▤</span><h2>Your cart is empty</h2><p>Add a course from Discover to see it here.</p><a class="button button-primary" href="/discover">Browse courses</a></div></main>
+  </div>
+</div>
+{% endblock %}

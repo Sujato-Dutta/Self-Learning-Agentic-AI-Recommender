@@ -1,0 +1,27 @@
+groups:
+  - name: smartreco
+    rules:
+      - alert: SmartRecoHighErrorRate
+        expr: sum(rate(smartreco_http_requests_total{status=~"5.."}[5m])) / clamp_min(sum(rate(smartreco_http_requests_total[5m])), 1) > 0.05
+        for: 5m
+        labels: {severity: warning}
+        annotations: {summary: "SmartReco HTTP error rate is above 5%"}
+      - alert: RecommendationLatencyHigh
+        expr: histogram_quantile(0.95, sum(rate(smartreco_recommendation_duration_seconds_bucket[5m])) by (le)) > 5
+        for: 10m
+        labels: {severity: warning}
+        annotations: {summary: "Recommendation p95 latency is above five seconds"}
+      - alert: VectorSyncFailures
+        expr: increase(smartreco_pinecone_sync_total{status="failure"}[10m]) > 2
+        labels: {severity: critical}
+        annotations: {summary: "Pinecone synchronization failures detected"}
+      - alert: VectorOutboxBacklog
+        expr: smartreco_outbox_pending > 50
+        for: 15m
+        labels: {severity: warning}
+        annotations: {summary: "Product vector outbox is growing"}
+      - alert: MeshFailureSpike
+        expr: increase(smartreco_mesh_calls_total{status="error"}[10m]) > 5
+        labels: {severity: critical}
+        annotations: {summary: "Mesh API failures spiked"}
+

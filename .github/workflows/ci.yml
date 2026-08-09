@@ -1,0 +1,39 @@
+name: Quality Gate
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - run: python -m compileall -q src scripts tests
+      - run: ruff check src scripts tests
+      - run: pytest --cov=src --cov-report=term-missing --cov-fail-under=65
+      - name: Secret scan
+        run: |
+          if git ls-files | grep -E '(^|/)\.env$'; then exit 1; fi
+          if grep -RInE '(rsk_|pcsk_|sk-proj-)[A-Za-z0-9_-]{12,}' --exclude-dir=.git .; then exit 1; fi
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: docker/setup-buildx-action@v3
+      - name: Validate production Compose contract
+        env:
+          GRAFANA_ADMIN_PASSWORD: ci-validation-only
+        run: |
+          cp .env.example .env
+          docker compose config --quiet
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: smartreco:test

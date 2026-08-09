@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="SmartReco turns real learning behavior into grounded, explainable course recommendations.">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <link rel="icon" type="image/png" href="/assets/logo.png">
+  <title>{% block title %}SmartReco{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='/css/app.css') }}?v=20260809-3">
+  {% block head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}" data-purchased-product-ids='{{ purchased_product_ids|default([])|tojson }}'>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  {% block content %}{% endblock %}
+  <div class="toast-stack" id="toast-stack" aria-live="polite"></div>
+  <script src="{{ url_for('static', path='/js/app.js') }}?v=20260809-3" defer></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

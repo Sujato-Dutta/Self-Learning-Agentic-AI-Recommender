@@ -1,0 +1,14 @@
+<header class="app-topbar">
+  <button class="mobile-menu" aria-label="Toggle navigation">☰</button>
+  {% if active_page == 'discover' %}
+  <form class="global-search" action="/discover" method="get"><span>⌕</span><input id="course-search" name="q" value="{{ q|default('') }}" placeholder="Search skills, courses or topics…" autocomplete="off"><kbd>⌘ K</kbd></form>
+  {% else %}
+  <div class="topbar-page-title">{{ page_title }}</div>
+  {% endif %}
+  <div class="top-actions">
+    {% if show_insights %}<button class="journey-toggle" data-toggle-insights aria-expanded="true" aria-controls="journey-twin">Journey Twin <span>›</span></button>{% endif %}
+    <a class="topbar-cart" href="/cart" aria-label="Open cart">Cart <b data-cart-count>0</b></a>
+    <div class="avatar small">{{ user.email[0]|upper }}</div>
+  </div>
+</header>
+

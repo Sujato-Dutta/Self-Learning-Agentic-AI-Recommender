@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}My Courses &mdash; SmartReco{% endblock %}
+{% block body_class %}workspace-page{% endblock %}
+{% block content %}
+<div class="workspace-shell no-insights">
+  {% set active_page = 'my_courses' %}{% include "_learner_sidebar.html" %}
+  <div class="app-main">
+    {% set page_title = 'My Courses' %}{% set show_insights = false %}{% include "_learner_topbar.html" %}
+    <main id="main-content" class="focused-page my-courses-page">
+      <header class="focused-heading"><span>YOUR LEARNING LIBRARY</span><h1>My Courses</h1><p>Everything you have purchased, ready whenever you want to learn.</p></header>
+      {% set owned_products = purchased_products|default(products|default([])) %}
+      {% if owned_products %}
+      {% set course_card_mode = 'owned' %}
+      <div class="course-grid catalog-grid my-courses-grid">
+        {% for product in owned_products %}{% include "_course_card.html" %}{% endfor %}
+      </div>
+      {% else %}
+      <div class="collection-empty my-courses-empty"><span aria-hidden="true">&#9655;</span><h2>No courses yet</h2><p>Complete a demo purchase and your course will appear here.</p><a class="button button-primary" href="/discover">Discover courses</a></div>
+      {% endif %}
+    </main>
+  </div>
+</div>
+{% endblock %}

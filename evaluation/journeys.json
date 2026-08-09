@@ -1,0 +1,9 @@
+[
+  {"persona":"AI engineer transition","events":["search:agentic ai","view:agentic-ai-foundations","wishlist:advanced-agentic-ai"],"relevant_categories":["Agentic AI"],"budget_max":7000,"difficulty":"advanced"},
+  {"persona":"Data analyst beginner","events":["search:python data analysis","view:python-foundations"],"relevant_categories":["Programming","Data Science"],"budget_max":3000,"difficulty":"beginner"},
+  {"persona":"Product leader","events":["search:ai product strategy","view:ai-product-management"],"relevant_categories":["Product"],"budget_max":4000,"difficulty":"intermediate"},
+  {"persona":"Budget-constrained ML learner","events":["search:machine learning"],"relevant_categories":["Machine Learning","Data Science"],"budget_max":2500,"difficulty":"intermediate"},
+  {"persona":"Cold start explorer","events":[],"relevant_categories":["Programming","Data Science","Agentic AI"],"budget_max":5000,"difficulty":"beginner"},
+  {"persona":"Conflicting AI interests","events":["search:computer vision","search:llm","dismiss:deep-learning-systems"],"relevant_categories":["Computer Vision","Generative AI"],"budget_max":6500,"difficulty":"advanced"}
+]
+

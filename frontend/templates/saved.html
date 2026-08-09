@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Saved courses — SmartReco{% endblock %}
+{% block body_class %}workspace-page{% endblock %}
+{% block content %}
+<div class="workspace-shell no-insights">
+  {% set active_page = 'saved' %}{% include "_learner_sidebar.html" %}
+  <div class="app-main">{% set page_title = 'Saved courses' %}{% set show_insights = false %}{% include "_learner_topbar.html" %}
+    <main id="main-content" class="focused-page"><header class="focused-heading"><span>YOUR SHORTLIST</span><h1>Saved for later</h1><p>Courses you want to revisit, compare, or add to your cart.</p></header><div class="course-grid catalog-grid" data-collection-grid="saved">{% for product in products %}{% include "_course_card.html" %}{% endfor %}</div><div class="collection-empty hidden" data-collection-empty><span>♡</span><h2>No saved courses yet</h2><p>Tap the heart on a course to build your shortlist.</p><a class="button button-primary" href="/discover">Explore courses</a></div></main>
+  </div>
+</div>
+{% endblock %}

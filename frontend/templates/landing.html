@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% block title %}SmartReco — Next-best-action intelligence for learning{% endblock %}
+{% block body_class %}landing-page{% endblock %}
+{% block content %}
+{% if user %}
+  {% set demo_href = '/admin' if user.role.value == 'admin' else '/discover' %}
+{% else %}
+  {% set demo_href = '/login' %}
+{% endif %}
+{% set featured_owned = featured_track and featured_track.id in purchased_product_ids|default([]) %}
+{% set featured_completion_offer = featured_track and featured_track.is_bundle and featured_track.has_ownership_credit %}
+
+<header class="marketing-nav landing-nav">
+  <a class="brand" href="/" aria-label="SmartReco home"><span class="brand-mark"><img src="/assets/logo.png" alt=""></span><span><span>Smart</span><span class="brand-reco">Reco</span></span></a>
+  <nav aria-label="Primary navigation">
+    <a href="#platform">Features</a><a href="#journey">Journey Twin</a><a href="#production">Production</a>
+  </nav>
+  <div class="nav-actions">
+    {% if not user %}<a class="text-link" href="/login">Log in</a>{% endif %}
+    <a class="button button-primary button-small" href="{{ demo_href }}">Try the live demo <span aria-hidden="true">↗</span></a>
+  </div>
+</header>
+
+<main id="main-content" data-landing>
+  <section class="hero landing-hero" data-track="landing_visit">
+    <video class="hero-video" autoplay muted loop playsinline aria-hidden="true" tabindex="-1" poster="/assets/ui_mock.png">
+      <source src="/assets/landing_page_bg.mp4" type="video/mp4">
+    </video>
+    <div class="hero-video-mask" aria-hidden="true"></div>
+    <div class="hero-shade"></div>
+    <div class="hero-content" data-reveal>
+      <h1><span class="hero-title-line">Recommend the right course.</span><br><span class="hero-title-accent">Take the right action.</span><br><span class="hero-title-final">Every time.</span></h1>
+      <p>SmartReco observes user behavior to find courses aligned with their interests and job requirements.</p>
+      <div class="hero-actions"><a class="button button-primary" href="{{ demo_href }}">Explore SmartReco <span aria-hidden="true">→</span></a><a class="button button-ghost" href="#platform">See the decision engine</a></div>
+    </div>
+
+    <div class="decision-stage" aria-label="Next-best-action decision preview" data-reveal>
+      <div class="decision-console">
+        <div class="decision-console-head"><span class="mini-brand"><span class="mini-logo"><img src="/assets/logo.png" alt=""></span><span>Smart</span><span class="brand-reco">Reco</span></span><span class="policy-live"><i></i> Policy live</span></div>
+        <div class="observed-journey"><span>OBSERVED JOURNEY</span><div><small>Search · Agentic AI</small><small>Saved · RAG Systems</small><small>Dwell · Advanced Agents</small></div></div>
+        <div class="mini-decision-flow" aria-label="Observed behavior becomes a next-best action"><span>Intent<strong>Strong</strong></span><b aria-hidden="true">→</b><span>Policy<strong>Bundle fit</strong></span><b aria-hidden="true">→</b><span>Message<strong>Career gap</strong></span></div>
+        <article class="hero-selected-action">
+          <div class="selected-action-label"><span>SELECTED NEXT ACTION</span><small>Relevance guard passed</small></div>
+          <h2>Offer Agentic AI Professional</h2>
+          <p>One focused track closes the learner’s Agents + RAG gap without repeating foundations.</p>
+          <div class="selected-action-meta"><span><del>₹16,497</del><strong>₹11,999</strong></span><span>Grounded evidence</span></div>
+        </article>
+        <div class="decision-console-foot"><span><i></i> Mesh intelligence active</span><span>Adaptive persuasion grounded</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="company-trust" aria-labelledby="company-trust-title">
+    <div class="company-trust-copy"><h2 id="company-trust-title">Trusted by top companies</h2><p>Designed for the teams shaping how the world learns.</p></div>
+    <div class="company-marquee" tabindex="0" aria-label="Featured learning companies">
+      <div class="company-marquee-track">
+        <ul class="company-logo-list">
+          <li class="company-logo logo-scaler"><img src="/assets/company%20logos/scaler_logo.png" alt="Scaler logo" loading="lazy"></li>
+          <li class="company-logo logo-pw"><img src="/assets/company%20logos/pw_logo.png" alt="PW logo" loading="lazy"></li>
+          <li class="company-logo logo-unacademy"><img src="/assets/company%20logos/unacademy_logo_clean.png" alt="Unacademy logo" loading="lazy"></li>
+          <li class="company-logo logo-udemy"><img src="/assets/company%20logos/udemy_logo.png" alt="Udemy logo" loading="lazy"></li>
+          <li class="company-logo logo-coursera"><img src="/assets/company%20logos/coursera_logo.webp" alt="Coursera logo" loading="lazy"></li>
+          <li class="company-logo logo-udacity"><img src="/assets/company%20logos/udacity_logo.png" alt="Udacity logo" loading="lazy"></li>
+        </ul>
+        <ul class="company-logo-list" aria-hidden="true">
+          <li class="company-logo logo-scaler"><img src="/assets/company%20logos/scaler_logo.png" alt="" loading="lazy"></li>
+          <li class="company-logo logo-pw"><img src="/assets/company%20logos/pw_logo.png" alt="" loading="lazy"></li>
+          <li class="company-logo logo-unacademy"><img src="/assets/company%20logos/unacademy_logo_clean.png" alt="" loading="lazy"></li>
+          <li class="company-logo logo-udemy"><img src="/assets/company%20logos/udemy_logo.png" alt="" loading="lazy"></li>
+          <li class="company-logo logo-coursera"><img src="/assets/company%20logos/coursera_logo.webp" alt="" loading="lazy"></li>
+          <li class="company-logo logo-udacity"><img src="/assets/company%20logos/udacity_logo.png" alt="" loading="lazy"></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="landing-feature-section" id="platform">
+    <div class="section-heading" data-reveal><h2>Every signal becomes a smarter next move.</h2><p>Navigate the systems that turn learner intent into a relevant, measurable action—without turning every click into an AI bill.</p></div>
+    <div class="landing-feature-showcase" data-feature-explorer data-reveal>
+      <div class="feature-tour-head"><span>Explore the architecture</span><button type="button" data-feature-autoplay aria-pressed="false"><span aria-hidden="true">Ⅱ</span> Pause tour</button></div>
+      <div class="feature-tour-layout">
+        <div class="feature-tablist" role="tablist" aria-label="SmartReco features" aria-orientation="vertical">
+          <button id="feature-tab-behavior" class="is-active" type="button" role="tab" aria-selected="true" aria-controls="feature-panel-behavior" tabindex="0" data-feature-tab="0"><span>01</span><span><b>Behavior intelligence</b><small>Meaningful, efficient signals</small></span><i></i></button>
+          <button id="feature-tab-retrieval" type="button" role="tab" aria-selected="false" aria-controls="feature-panel-retrieval" tabindex="-1" data-feature-tab="1"><span>02</span><span><b>Retrieval & reranking</b><small>Real catalog candidates</small></span><i></i></button>
+          <button id="feature-tab-action" type="button" role="tab" aria-selected="false" aria-controls="feature-panel-action" tabindex="-1" data-feature-tab="2"><span>03</span><span><b>Next-best action</b><small>Sell, wait, or say nothing</small></span><i></i></button>
+          <button id="feature-tab-persuasion" type="button" role="tab" aria-selected="false" aria-controls="feature-panel-persuasion" tabindex="-1" data-feature-tab="3"><span>04</span><span><b>Adaptive persuasion</b><small>Career, value, or speed</small></span><i></i></button>
+          <button id="feature-tab-bundles" type="button" role="tab" aria-selected="false" aria-controls="feature-panel-bundles" tabindex="-1" data-feature-tab="4"><span>05</span><span><b>Revenue-aware bundles</b><small>Commercially smart, still relevant</small></span><i></i></button>
+          <button id="feature-tab-learning" type="button" role="tab" aria-selected="false" aria-controls="feature-panel-learning" tabindex="-1" data-feature-tab="5"><span>06</span><span><b>Grounded reward loop</b><small>Evidence in, outcomes back</small></span><i></i></button>
+        </div>
+
+        <div class="feature-panel-stack">
+          <article id="feature-panel-behavior" class="landing-feature-panel is-active" role="tabpanel" aria-labelledby="feature-tab-behavior" aria-hidden="false" tabindex="0" data-feature-panel="0">
+            <div class="feature-panel-copy"><span>BEHAVIOR EVENTS</span><h3>Listen to intent without slowing the learner down.</h3><p>Searches, saves, carts, purchases, and meaningful course-page dwell are deduplicated, queued, and sent in compact non-blocking batches.</p><ul><li>10-second or 15-event batching</li><li>Throttled high-frequency signals</li><li>Consent-gated personalization</li></ul></div>
+            <div class="feature-demo event-queue-demo" aria-hidden="true"><div class="demo-window-head"><span>LIVE EVENT QUEUE</span><i></i></div><div class="demo-event"><span>⌕</span><div><b>Search</b><small>“agentic ai systems”</small></div><em>queued</em></div><div class="demo-event"><span>♡</span><div><b>Course saved</b><small>Production RAG Systems</small></div><em>queued</em></div><div class="demo-event"><span>◷</span><div><b>Meaningful dwell</b><small>Advanced Agentic AI</small></div><em>batched</em></div><div class="demo-batch"><span><i></i> Non-blocking transport</span><strong>15 / 15</strong></div></div>
+          </article>
+
+          <article id="feature-panel-retrieval" class="landing-feature-panel" role="tabpanel" aria-labelledby="feature-tab-retrieval" aria-hidden="true" tabindex="0" data-feature-panel="1">
+            <div class="feature-panel-copy"><span>CANDIDATE INTELLIGENCE</span><h3>Retrieve broadly. Rerank for the person in front of you.</h3><p>Semantic and catalog candidates are filtered against budget, level, skill gaps, prerequisites, and recent behavior before any product reaches the learner.</p><ul><li>Hybrid semantic + catalog retrieval</li><li>Difficulty and affordability guards</li><li>Catalog IDs validated before display</li></ul></div>
+            <div class="feature-demo ranking-demo" aria-hidden="true"><div class="demo-window-head"><span>RERANKED CANDIDATES</span><small>Profile matched</small></div><div class="ranked-course is-leading"><span>01</span><div><b>Agentic AI Professional</b><small>Agents · RAG · Advanced</small><i style="--score:92%"></i></div><strong>92</strong></div><div class="ranked-course"><span>02</span><div><b>Production RAG Systems</b><small>RAG · LLMs · Python</small><i style="--score:86%"></i></div><strong>86</strong></div><div class="ranked-course"><span>03</span><div><b>Advanced Agentic AI</b><small>AI Agents · LLMs</small><i style="--score:79%"></i></div><strong>79</strong></div><div class="ranking-guard">Budget · Difficulty · Skill gap · Fatigue</div></div>
+          </article>
+
+          <article id="feature-panel-action" class="landing-feature-panel" role="tabpanel" aria-labelledby="feature-tab-action" aria-hidden="true" tabindex="0" data-feature-panel="2">
+            <div class="feature-panel-copy"><span>DECISION POLICY</span><h3>Choose what to do—not only what to recommend.</h3><p>The policy can suggest a course, prerequisite, cheaper route, bundle, social proof, delayed email, or nothing when intent is still weak.</p><ul><li>Purchase propensity + fatigue guard</li><li>One policy-selected action</li><li>Respectful suppression paths</li></ul></div>
+            <div class="feature-demo action-policy-demo" aria-hidden="true"><div class="demo-window-head"><span>NEXT-BEST-ACTION POLICY</span><small>Evaluating</small></div><div class="policy-option"><span>Recommend prerequisite</span><small>Low fit</small></div><div class="policy-option is-selected"><span><i></i> Offer relevant bundle</span><small>Selected</small></div><div class="policy-option"><span>Send email later</span><small>Not needed</small></div><div class="policy-option"><span>Show nothing</span><small>Guard available</small></div><div class="policy-result"><b>Action selected</b><span>Agentic AI Professional</span></div></div>
+          </article>
+
+          <article id="feature-panel-persuasion" class="landing-feature-panel" role="tabpanel" aria-labelledby="feature-tab-persuasion" aria-hidden="true" tabindex="0" data-feature-panel="3">
+            <div class="feature-panel-copy"><span>ADAPTIVE PERSUASION</span><h3>Same catalog. A reason that fits this learner.</h3><p>SmartReco selects career, price, speed, prerequisite, or social-proof framing, then constrains generated copy to verified behavior and catalog facts.</p><ul><li>Career-outcome framing</li><li>Price- and time-sensitive alternatives</li><li>No invented urgency or evidence</li></ul></div>
+            <div class="feature-demo persuasion-demo" aria-hidden="true"><div class="persona-switch"><span class="is-active">Career</span><span>Value</span><span>Speed</span></div><div class="persuasion-message"><small>FOR A CAREER-FOCUSED LEARNER</small><p>“You’ve been exploring production AI systems. This track closes the gap between building agent prototypes and shipping grounded RAG workflows.”</p></div><div class="grounding-stamp"><span>✓</span><div><b>Grounding passed</b><small>Behavior + catalog + sourced evidence</small></div></div></div>
+          </article>
+
+          <article id="feature-panel-bundles" class="landing-feature-panel" role="tabpanel" aria-labelledby="feature-tab-bundles" aria-hidden="true" tabindex="0" data-feature-panel="4">
+            <div class="feature-panel-copy"><span>REVENUE-AWARE OPTIMIZER</span><h3>Grow order value only when the bundle makes sense.</h3><p>A bundle must cover demonstrated interests, pass affordability and discount guards, and beat the best standalone option on expected value.</p><ul><li>Verified component membership</li><li>Real discount calculations</li><li>Relevance before ticket size</li></ul></div>
+            <div class="feature-demo bundle-demo" aria-hidden="true"><div class="demo-window-head"><span>BUNDLE COMPARISON</span><small>All guards passed</small></div><div class="bundle-comparison"><div><small>INDIVIDUAL COURSES</small><strong>₹16,497</strong><span>3 separate purchases</span></div><b aria-hidden="true">→</b><div class="bundle-winner"><small>SMARTRECO TRACK</small><strong>₹11,999</strong><span>Save 27%</span></div></div><div class="bundle-guards"><span>2+ interests</span><span>Affordable</span><span>Relevant</span></div><div class="bundle-decision"><i></i><span><b>Eligible</b> · Higher expected value without forcing an irrelevant bundle</span></div></div>
+          </article>
+
+          <article id="feature-panel-learning" class="landing-feature-panel" role="tabpanel" aria-labelledby="feature-tab-learning" aria-hidden="true" tabindex="0" data-feature-panel="5">
+            <div class="feature-panel-copy"><span>GROUNDING + REWARD</span><h3>Learn from outcomes while keeping every claim accountable.</h3><p>Views, cart actions, dismissals, and purchases resolve back to the decision that caused them. Sourced claims expire; catalog and numeric claims are validated.</p><ul><li>Idempotent decision attribution</li><li>Grounding and numeric-claim checks</li><li>Measurable policy rewards</li></ul></div>
+            <div class="feature-demo reward-demo" aria-hidden="true"><div class="reward-loop"><span>Impression</span><i>→</i><span>Cart</span><i>→</i><span>Purchase</span><i>↺</i></div><div class="reward-card"><span class="reward-pulse"></span><div><small>OUTCOME ATTRIBUTED</small><b>Policy reward stored</b><p>Decision → interaction → learner profile</p></div></div><div class="reward-evidence"><span>Catalog verified</span><span>Source active</span><span>Event idempotent</span></div></div>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="journey-section" id="journey">
+    <div class="journey-copy" data-reveal><h2>Your Journey Twin doesn’t just describe you. It acts from your position.</h2><p>It combines goals, constraints, emerging interests, and observed behavior into a decisive next step based on market evidence.</p><ul><li><span>01</span><div><b>Understands the moment</b><small>Search, save, cart, purchase, and meaningful course dwell.</small></div></li><li><span>02</span><div><b>Explains the reasoning</b><small>Intent signals become natural language, not a black-box score.</small></div></li><li><span>03</span><div><b>Makes one useful move</b><small>A course, bundle, later follow-up, or respectful silence.</small></div></li></ul><a class="button button-primary" href="{{ demo_href }}">Meet your Journey Twin <span aria-hidden="true">→</span></a></div>
+
+    <div class="landing-twin-demo{{ ' completion-offer' if featured_completion_offer else '' }}" data-reveal{% if featured_track %} data-product-id="{{ featured_track.id }}" data-price="{{ featured_track.price }}" data-catalog-price="{{ featured_track.catalog_price }}" data-ownership-credit="{{ featured_track.ownership_credit }}" data-offer-eligible="true" data-component-ids='{{ featured_track.bundled_product_ids|tojson }}' data-owned-component-ids='{{ featured_track.owned_component_ids|tojson }}' data-remaining-component-ids='{{ featured_track.remaining_component_ids|tojson }}'{% if not featured_owned %} data-nba-card data-action-type="{{ featured_track.action_type }}" data-persuasion-strategy="career_outcome"{% endif %}{% endif %}>
+      <div class="landing-twin-head"><div><span class="mini-logo"><img src="/assets/logo.png" alt=""></span><div><small>JOURNEY TWIN · LIVE MODEL</small><h3>Priya’s learning position</h3></div></div><span class="twin-grounded-status"><i></i> Grounded</span></div>
+      <div class="landing-twin-context">
+        <div><small>EMERGING INTERESTS</small><p>{% if featured_track %}{% for interest in featured_track.journey_interests %}<span>{{ interest }}</span>{% endfor %}{% else %}<span>Catalog reviewed</span>{% endif %}</p></div>
+        <div><small>SKILLS TO BUILD</small><p>{% if featured_track %}{% for skill in featured_track.journey_skills %}<span>{{ skill }}</span>{% endfor %}{% else %}<span>No unmatched gap</span>{% endif %}</p></div>
+      </div>
+      <div class="landing-twin-position"><span aria-hidden="true">🤖</span><b>IF I WERE IN YOUR POSITION</b></div>
+      <div class="landing-twin-dialogue">{% if featured_track %}<h4>{{ featured_track.dialogue_heading }}</h4><p>{{ featured_track.dialogue }}</p>{% else %}<h4>No recommendation is necessary right now.</h4><p>Your purchases already cover every eligible catalog item. The Journey Twin will wait for genuinely new learning value instead of repeating an offer.</p>{% endif %}</div>
+      {% if featured_track %}
+      <section class="landing-market-research" aria-label="Evidence supporting the Journey Twin suggestion"><div><span aria-hidden="true">↗</span><b>{{ featured_track.market_label }}</b></div><p>{{ featured_track.market_claim }}</p>{% if featured_track.market_source_url %}<a href="{{ featured_track.market_source_url }}" target="_blank" rel="noopener noreferrer">{{ featured_track.market_source_name }} <span aria-hidden="true">↗</span></a>{% endif %}</section>
+      {% else %}
+      <section class="landing-market-research" aria-label="Journey Twin relevance guard"><div><span aria-hidden="true">✓</span><b>RELEVANCE GUARD</b></div><p>No eligible unowned product remains, so showing nothing is the best action.</p></section>
+      {% endif %}
+      {# The public seed resolves this catalog asset through featured_track.image_url: /assets/course%20covers/advanced_agentic_ai.png #}
+      <article class="landing-action-product"{% if not featured_track %} data-empty{% endif %}>
+        {% if featured_track %}
+        <img class="landing-product-cover" src="{{ featured_track.image_url }}" alt="{{ featured_track.cover_alt }}" loading="lazy">
+        <div class="landing-product-copy"><small>{% if featured_completion_offer %}COMPLETE YOUR BUNDLE · {{ featured_track.remaining_component_count }} COURSES REMAINING{% else %}{{ 'PROFESSIONAL BUNDLE' if featured_track.is_bundle else 'COURSE' }} · {{ featured_track.difficulty|upper }}{% endif %}</small><h4>{{ featured_track.title }}</h4><p>{% for skill in featured_track.skills[:3] %}<span>{{ skill }}</span>{% endfor %}</p></div>
+        <div class="landing-product-price">{% if featured_track.original_price %}<del>₹{{ featured_track.original_price|inr }}</del>{% endif %}<strong>₹{{ featured_track.price|inr }}</strong>{% if featured_track.savings_percent %}<span>Save {{ featured_track.savings_percent }}%</span>{% endif %}</div>
+        {% else %}
+        <span class="mini-logo" aria-hidden="true"><img src="/assets/logo.png" alt=""></span>
+        <div class="landing-product-copy"><small>NO COMMERCIAL ACTION</small><h4>Nothing new to recommend</h4><p><span>Ownership respected</span><span>No duplicate offer</span></p></div>
+        {% endif %}
+      </article>
+      {% if featured_completion_offer %}<div class="bundle-completion-note landing-completion-note"><span>{{ featured_track.owned_component_count }} course{{ '' if featured_track.owned_component_count == 1 else 's' }} already yours</span><small>₹{{ featured_track.ownership_credit|inr }} ownership credit applied</small></div>{% endif %}
+      {% if featured_track %}<div class="landing-twin-actions">{% if featured_owned %}<span class="course-purchased-status"><span aria-hidden="true">&#10003;</span> Already purchased</span><a class="button button-ghost" href="/my-courses">My Courses</a>{% elif featured_completion_offer %}<button class="button button-primary" type="button" data-cart data-cart-label="Complete bundle">Complete bundle</button><a class="button button-ghost" href="/courses/{{ featured_track.slug }}">Review completion</a>{% elif featured_track.is_bundle %}<button class="button button-primary" type="button" data-cart data-cart-label="Add track to cart">Add track to cart</button><a class="button button-ghost" href="/courses/{{ featured_track.slug }}">View track</a>{% else %}<button class="button button-primary" type="button" data-cart data-cart-label="Add course to cart">Add course to cart</button><a class="button button-ghost" href="/courses/{{ featured_track.slug }}">View course</a>{% endif %}</div>{% endif %}
+    </div>
+  </section>
+
+  <section class="production-section" id="production">
+    <div class="production-heading" data-reveal><h2>A decision system you can operate, measure, and afford.</h2><p>The product experience and the production architecture tell the same story—from efficient event capture to an attributable commercial outcome.</p></div>
+    <div class="production-layout" data-reveal>
+      <div class="production-pipeline" aria-label="SmartReco decision pipeline">
+        <div class="pipeline-head"><div><span>LIVE DECISION GRAPH</span><h3>Behavior to reward</h3></div><span class="pipeline-running"><i></i> Observable</span></div>
+        <ol class="pipeline-grid" data-decision-graph>
+          <li data-decision-node tabindex="0"><span class="pipeline-marker">01</span><div class="pipeline-copy"><small>INPUT</small><b>Behavior events</b><p>Search · save · dwell · cart</p></div></li>
+          <li data-decision-node tabindex="0"><span class="pipeline-marker">02</span><div class="pipeline-copy"><small>MODEL</small><b>Intent + propensity</b><p>Strength · timing · fatigue</p></div></li>
+          <li data-decision-node tabindex="0"><span class="pipeline-marker">03</span><div class="pipeline-copy"><small>RETRIEVE</small><b>Candidate retrieval</b><p>Semantic + catalog retrieval</p></div></li>
+          <li data-decision-node tabindex="0"><span class="pipeline-marker">04</span><div class="pipeline-copy"><small>RANK</small><b>Reranking</b><p>Goal · skill · budget · level</p></div></li>
+          <li class="pipeline-decision" data-decision-node tabindex="0"><span class="pipeline-marker">05</span><div class="pipeline-copy"><small>DECIDE</small><b>Next-best-action policy</b><p>Offer Agentic AI Professional · every guard passed</p></div></li>
+          <li data-decision-node tabindex="0"><span class="pipeline-marker">06</span><div class="pipeline-copy"><small>FRAME</small><b>Persuasion selection</b><p>Career · value · speed</p></div></li>
+          <li data-decision-node tabindex="0"><span class="pipeline-marker">07</span><div class="pipeline-copy"><small>GROUND</small><b>Grounded Mesh copy</b><p>Catalog + active sources</p></div></li>
+          <li data-decision-node tabindex="0"><span class="pipeline-marker">08</span><div class="pipeline-copy"><small>LEARN</small><b>Reward feedback</b><p>Outcome attribution closes the loop</p></div></li>
+        </ol>
+        <div class="pipeline-return"><span aria-hidden="true">↺</span><b>Reward updates the next decision</b></div>
+      </div>
+
+      <aside class="production-console" aria-label="Production cost and reliability controls">
+        <div class="production-console-head"><div><span>OPERATING CONTROLS</span><h3>Efficiency is part of the product.</h3></div><span>PRODUCTION</span></div>
+        <dl>
+          <div><dt><span>Event transport</span><small>Non-blocking queue</small></dt><dd>Batched</dd></div>
+          <div><dt><span>Recommendation reuse</span><small>Profile hash + TTL</small></dt><dd>Cached</dd></div>
+          <div><dt><span>Generation control</span><small>Per-user lock + caps</small></dt><dd>Guarded</dd></div>
+          <div><dt><span>Mesh orchestration</span><small>Grounded generation</small></dt><dd>Active</dd></div>
+          <div><dt><span>Vector synchronization</span><small>Version-coalescing outbox</small></dt><dd>Durable</dd></div>
+          <div><dt><span>Grounding validation</span><small>Catalog + evidence IDs</small></dt><dd>Enforced</dd></div>
+        </dl>
+        <div class="observability-row"><span>Prometheus</span><span>Grafana</span><span>LangSmith</span></div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="cta-band landing-cta"><div><h2>Your learners are already showing you what they need. <span class="landing-cta-accent">Turn those signals into one next step worth taking.</span></h2></div><a class="button button-primary" href="{{ demo_href }}">Launch the live demo <span aria-hidden="true">→</span></a></section>
+</main>
+
+<footer class="marketing-footer"><a class="brand" href="/"><span class="brand-mark"><img src="/assets/logo.png" alt=""></span><span><span>Smart</span><span class="brand-reco">Reco</span></span></a><span>Right product · Right time · Right persuasion</span><span>FastAPI · LangGraph · Pinecone · Mesh</span></footer>
+{% endblock %}

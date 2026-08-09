@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Discover courses — SmartReco{% endblock %}
+{% block body_class %}workspace-page{% endblock %}
+{% block content %}
+<div class="workspace-shell" data-workspace>
+  {% set active_page = 'discover' %}{% include "_learner_sidebar.html" %}
+  <div class="app-main">
+    <main id="main-content" class="discovery-content">
+      <section class="discovery-head"><button class="mobile-menu discovery-menu" aria-label="Toggle navigation">☰</button><div><p class="mini-label">YOUR LEARNING MARKETPLACE</p><h1>Discover courses</h1><p>Recommendations shaped by your interests, goals, and learning behavior.</p></div><button class="journey-toggle discover-journey-button" data-toggle-insights aria-expanded="true" aria-controls="journey-twin">Journey Twin <span class="journey-arrow" aria-hidden="true">→</span></button></section>
+
+      <section class="filter-row simplified-filters"><button class="button button-muted" data-filter-toggle>☷ Filters</button><div class="filter-drawer" id="filter-drawer"><form action="/discover">{% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}<label>Category<select name="category"><option value="">All categories</option>{% for cat in categories %}<option value="{{ cat }}" {{ 'selected' if selected_category == cat else '' }}>{{ cat }}</option>{% endfor %}</select></label><label>Difficulty<select name="difficulty"><option value="">All levels</option>{% for level in ['beginner','intermediate','advanced','all-levels'] %}<option value="{{ level }}" {{ 'selected' if selected_difficulty == level else '' }}>{{ level|title }}</option>{% endfor %}</select></label><button class="button button-primary button-small">Apply filters</button></form></div><span>{{ result_count }} results</span><label>Sort by <select id="sort-select"><option value="smart">SmartReco rank</option><option value="price-low">Price: low first</option><option value="price-high">Price: high first</option></select></label></section>
+
+      {% if not filters_active %}
+      <section class="discover-section recommended-section" id="recommended-for-you">
+      <section class="section-row recommendation-heading"><div><span class="section-kicker">PERSONALIZED FOR YOU</span><h2>Recommended for you</h2><p>Courses that best match your current Journey Twin.</p></div>{% if recommendation %}<span class="recommendation-confidence">{{ (recommendation.confidence * 100)|round|int }}% profile confidence</span>{% endif %}</section>
+      {% set recommended_courses = recommendation['items']|rejectattr('is_bundle')|list if recommendation else [] %}
+      {% if recommended_courses %}
+      <div class="course-grid recommendation-grid" data-recommendation-id="{{ recommendation.id }}">
+        {% for item in recommended_courses[:3] %}
+        {% set item_owned = item.product_id in purchased_product_ids %}
+        <article class="course-card recommended{{ ' is-purchased' if item_owned else '' }}" tabindex="0" data-product-id="{{ item.product_id }}" data-price="{{ item.price }}" data-category="{{ item.category }}" data-title="{{ item.title }}" data-course-url="/courses/{{ item.slug }}">
+          <div class="course-media"><img src="{{ item.image_url }}" alt="{{ item.title }} course cover" loading="eager"><span class="match-badge">{{ item.match_score }}% match</span>{% if item.is_bundle %}<span class="bundle-badge">PROFESSIONAL BUNDLE</span>{% endif %}{% if not item_owned %}<button class="save-button" aria-label="Save {{ item.title }}" data-save data-save-heart>&#9825;</button>{% endif %}</div>
+          <div class="course-body"><div class="course-kind-row"><span class="course-kind">COURSE &middot; {{ item.category }}</span>{% if item_owned %}<span class="course-owned-chip">PURCHASED</span>{% endif %}</div><h3><a href="/courses/{{ item.slug }}" data-course-link>{{ item.title }}</a></h3><p>{{ item.reason }}</p><div class="course-meta"><span>&#9733; {{ '%.1f'|format(4.4 + item.match_score / 200) }}</span><span>&#9677; {{ item.difficulty|title }}</span></div><div class="course-price"><b>&#8377;{{ item.price|inr }}</b></div><button class="why-button" data-why>&#9678; Why this course?</button><div class="course-actions">{% if item_owned %}<span class="course-purchased-status"><span aria-hidden="true">&#10003;</span> Already purchased</span>{% else %}<button data-cart>Add to cart</button><a href="/courses/{{ item.slug }}?buy=1" data-buy>Buy now</a>{% endif %}</div></div>
+          <div class="match-details hidden"><div><span>MATCH SCORE</span><strong>{{ item.match_score }}%</strong></div><ul class="match-breakdown"><li><span>Goal fit</span><span class="match-separator" aria-hidden="true">—</span><b>{{ (item.score_breakdown.get('interest', 0.5) * 100)|round|int }}%</b></li><li><span>Skill-gap fit</span><span class="match-separator" aria-hidden="true">—</span><b>{{ (item.score_breakdown.get('skill_gap', 0.5) * 100)|round|int }}%</b></li><li><span>Difficulty fit</span><span class="match-separator" aria-hidden="true">—</span><b>{{ (item.score_breakdown.get('difficulty', 0.5) * 100)|round|int }}%</b></li><li><span>Budget fit</span><span class="match-separator" aria-hidden="true">—</span><b>{{ (item.score_breakdown.get('budget', 0.5) * 100)|round|int }}%</b></li></ul><p>{{ item.reason }}</p></div>
+        </article>
+        {% endfor %}
+      </div>
+      {% else %}
+      <section class="empty-recommendation"><div>✦</div><h2>Your recommendations are taking shape</h2><p>Explore a few courses, then refresh this section.</p><button class="button button-primary" data-generate>Build my recommendations</button></section>
+      {% endif %}
+      </section>
+      {% endif %}
+
+      <section class="discover-section catalog-section" id="all-courses"><section class="section-row catalog-heading"><div><span class="section-kicker">FULL CATALOG</span><h2>All courses</h2><p>Browse individual courses and choose your next skill.</p></div></section>
+      <div class="course-grid catalog-grid" id="course-grid">
+        {% for product in products %}{% include "_course_card.html" %}{% else %}<div class="empty-state"><h3>No courses found</h3><p>Try clearing a filter or searching for a broader skill.</p><a class="button button-ghost" href="/discover">Clear filters</a></div>{% endfor %}
+      </div>
+      </section>
+
+      {% if not filters_active or bundles %}
+      <section class="discover-section bundle-section" id="exclusive-course-bundles"><section class="section-row catalog-heading"><div><span class="section-kicker">SAVE WITH A COMPLETE PATH</span><h2>Exclusive Course Bundles</h2><p>Structured professional paths with verified savings against individual course prices.</p></div></section><div class="course-grid bundle-grid">{% for product in bundles %}{% include "_course_card.html" %}{% else %}<div class="empty-state"><h3>No bundles match these filters</h3><p>Clear the filters to see every professional bundle.</p></div>{% endfor %}</div></section>
+      {% endif %}
+    </main>
+  </div>
+
+  <aside class="insight-panel" id="journey-twin">
+    <div class="panel-section twin-panel-head"><div><span>LIVE MODEL</span><h2>Journey Twin</h2></div></div>
+    <div class="twin-confidence"><div><strong>{{ (profile.confidence * 100)|round|int }}%</strong><span>Profile confidence</span></div><div class="confidence-ring" style="--confidence:{{ (profile.confidence * 100)|round|int }}"></div></div>
+    <section class="panel-section"><h3>Emerging interests</h3><div class="interest-tags">{% for interest in profile.emerging_interests %}<span>{{ interest }}</span>{% endfor %}</div><h3>Skills to build</h3><div class="skill-list">{% for skill in profile.skill_gaps %}<span><i></i>{{ skill }}<small>{{ ["High gap","Medium gap","Emerging"][loop.index0 % 3] }}</small></span>{% endfor %}</div></section>
+    <section class="panel-section privacy-controls"><h3>Privacy & delivery</h3><label><input id="personalization-toggle" type="checkbox" {{ 'checked' if user.personalization_enabled else '' }}> Use activity for personalization</label><label><input id="digest-toggle" type="checkbox" {{ 'checked' if notification_preference and notification_preference.email_enabled else '' }}> Daily email digest</label><label>Delivery hour (your local time)<select id="digest-hour">{% for hour in range(24) %}<option value="{{ hour }}" {{ 'selected' if notification_preference and notification_preference.preferred_hour == hour else '' }}>{{ '%02d:00'|format(hour) }}</option>{% endfor %}</select></label><div class="privacy-actions"><button data-save-privacy>Save settings</button><button data-erase-behavior>Erase history</button></div></section>
+    {% set nba = recommendation.next_best_action if recommendation else none %}
+    {% set nba_owned = nba and nba.product and nba.product.id in purchased_product_ids %}
+    {% set nba_unavailable = nba and nba.product and nba_offer and not nba_offer.eligible %}
+    {% set nba_completion_offer = nba and nba.product and nba.product.is_bundle and nba_offer and nba_offer.has_ownership_credit and nba_offer.eligible %}
+    {% set nba_display_price = nba_offer.personalized_price if nba_offer else (nba.product.price if nba and nba.product else 0) %}
+    {% set nba_original_price = nba_offer.remaining_standalone_subtotal if nba_offer and nba.product and nba.product.is_bundle else (nba.product.original_price if nba and nba.product else none) %}
+    {% if nba and not filters_active %}
+    <section class="panel-section twin-next-action{{ ' completion-offer' if nba_completion_offer else '' }}" data-nba-card data-decision-id="{{ nba.id }}" data-action-type="{{ nba.action_type }}" data-persuasion-strategy="{{ nba.persuasion_strategy }}" {% if nba.product %}data-product-id="{{ nba.product.id }}" data-price="{{ nba_display_price }}" data-catalog-price="{{ nba_offer.catalog_price if nba_offer else nba.product.price }}" data-ownership-credit="{{ nba_offer.ownership_credit if nba_offer else 0 }}" data-offer-eligible="{{ 'false' if nba_unavailable else 'true' }}" data-component-ids='{{ nba.product.bundled_product_ids|tojson }}'{% if nba_offer %} data-owned-component-ids='{{ nba_offer.owned_components|map(attribute="product_id")|list|tojson }}' data-remaining-component-ids='{{ nba_offer.remaining_components|map(attribute="product_id")|list|tojson }}'{% endif %}{% endif %}>
+      <div class="next-action-heading"><span class="next-action-robot" aria-hidden="true">&#129302;</span><span>IF I WERE IN YOUR POSITION</span></div>
+      <div class="next-action-dialogue"><h3>{{ nba.headline }}</h3><p>{{ nba.message }}</p></div>
+      {% if nba.market_signals %}
+      <section class="journey-market-research" aria-label="Market research behind this recommendation">
+        <div class="market-research-heading"><span aria-hidden="true">↗</span><strong>MARKET RESEARCH</strong></div>
+        <div class="market-research-list">
+          {% for signal in nba.market_signals %}
+          <article><p>{{ signal.claim }}</p><a href="{{ signal.source_url }}" target="_blank" rel="noopener noreferrer">View {{ signal.source_name }} <span aria-hidden="true">↗</span></a></article>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+      {% if nba.product %}
+      <article class="next-action-product">
+        <img src="{{ nba.product.image_url }}" alt="{{ nba.product.title }} course cover" loading="lazy">
+        <div><span>{% if nba_completion_offer %}COMPLETE YOUR BUNDLE · {{ nba_offer.remaining_components|length }} COURSES REMAINING{% else %}{{ 'BUNDLE' if nba.product.is_bundle else 'COURSE' }} · {{ nba.product.difficulty|upper }}{% endif %}</span><h4><a href="/courses/{{ nba.product.slug }}" data-course-link>{{ nba.product.title }}</a></h4><div class="next-action-skills">{% for skill in nba.product.skills[:3] %}<small>{{ skill }}</small>{% endfor %}</div></div>
+      </article>
+      {% if nba_completion_offer %}<div class="bundle-completion-note"><span>{{ nba_offer.owned_components|length }} course{{ '' if nba_offer.owned_components|length == 1 else 's' }} already yours</span><small>₹{{ nba_offer.ownership_credit|inr }} ownership credit applied</small></div>{% endif %}
+      <div class="next-action-price">{% if nba_original_price and nba_original_price > nba_display_price %}<del>₹{{ nba_original_price|inr }}</del>{% endif %}<strong>₹{{ nba_display_price|inr }}</strong>{% if nba_offer and nba_offer.discount_percent %}<span>Save {{ nba_offer.discount_percent }}%</span>{% elif nba.product.savings_percent %}<span>Save {{ nba.product.savings_percent }}%</span>{% endif %}</div>
+      <div class="next-action-ctas">{% if nba_owned or nba_unavailable %}<span class="course-purchased-status"><span aria-hidden="true">&#10003;</span> {{ 'All included courses purchased' if nba.product.is_bundle else 'Already purchased' }}</span><a href="/my-courses">My Courses</a>{% elif nba_completion_offer %}<button data-cart data-cart-label="Complete bundle">Complete bundle</button><a href="/courses/{{ nba.product.slug }}?buy=1" data-buy>Review completion</a>{% else %}<button data-cart data-cart-label="{{ nba.cta_label }}">{{ nba.cta_label }}</button><a href="/courses/{{ nba.product.slug }}?buy=1" data-buy>Buy now</a>{% endif %}</div>
+      {% endif %}
+      {% if nba.product %}<button class="next-action-dismiss" data-nba-dismiss>Not for me</button>{% endif %}
+    </section>
+    {% endif %}
+  </aside>
+</div>
+
+<dialog id="why-dialog" class="app-dialog"><form method="dialog" class="dialog-close"><button aria-label="Close">×</button></form><div id="why-dialog-content"></div></dialog>
+<div class="consent-banner" id="consent-banner"><div><b>Personalization you control</b><p>SmartReco uses course interactions—not sensitive personal data—to improve recommendations.</p></div><button class="button button-primary button-small" data-consent>Allow personalization</button><button class="button button-ghost button-small" data-decline>Not now</button></div>
+{% endblock %}
