@@ -59,6 +59,18 @@ Every language-model and embedding request goes through the Mesh OpenAI-compatib
 | Observability | LangSmith, structured logs, Prometheus, Grafana |
 | Runtime | Docker Compose and GitHub Actions |
 
+## Evaluation
+
+Ranking quality is macro-averaged across six reproducible, labeled learner journeys in `evaluation/journeys.json`.
+
+| Metric | Result |
+|---|---:|
+| Precision@3 | 83.33% |
+| NDCG@3 | 96.09% |
+| Automated tests | 125 passed |
+| Code coverage | 83% |
+| Observed live Mesh recommendation latency | 11.6–12.8 seconds |
+
 ## Run locally
 
 Requires Python 3.11+.
