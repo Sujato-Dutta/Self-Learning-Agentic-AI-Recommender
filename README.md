@@ -1,4 +1,4 @@
-# SmartReco --- Self-Learning Agentic AI Recommender
+# SmartReco: Self-Learning Agentic AI Recommender
 
 **The right learning product, at the right moment, with the right persuasion.**
 
