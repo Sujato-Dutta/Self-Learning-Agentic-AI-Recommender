@@ -4,6 +4,8 @@
 
 SmartReco is a behavioral AI recommendation platform for learning commerce. It turns searches, course exploration, saves, cart activity, purchases, and feedback into one catalog-grounded next action, explained through a conversational **Journey Twin**.
 
+Watch 👉 [Demo Video 🎥](https://youtu.be/pCe4qCHcS7w?si=rEYCBL9DO0ohIpCI)
+
 ![SmartReco learner experience](assets/ui_mock.png)
 
 ## Core capabilities
