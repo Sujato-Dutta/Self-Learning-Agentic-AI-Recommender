@@ -157,6 +157,6 @@ tests/        Unit and integration tests
 
 ## Author
 
-Sujato Dutta
-AI Engineer | Researcher 
+Sujato Dutta <br>
+AI Engineer | Researcher <br>
 [LinkedIn](https://www.linkedin.com/in/sujato-dutta/)
